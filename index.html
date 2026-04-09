@@ -355,11 +355,23 @@ function detectType(raw) {
     const r=parseUPUrl(s); if(r) return r;
   }
 
-  // WeChat Pay
+  // WeChat Pay — URI scheme
   if(/^wxp:\/\//i.test(s)||/^weixin:\/\//i.test(s)) {
     return {type:'WeChat Pay',badgeClass:'badge-wechat',icon:'🟢',confidence:'High',
       description:'WeChat Pay QR code — uses the wxp:// URI scheme by Tencent.',
       fields:[{label:'Scheme',val:s.split('://')[0]+'://'},{label:'Payload preview',val:s.substring(s.indexOf('//')+2,s.indexOf('//')+42)+'...'}]};
+  }
+
+  // WeChat Pay — URL-based (pay.wechatpay.cn, payapp.weixin.qq.com, wxpay.tenpay.com, etc.)
+  if(/^https?:\/\//i.test(s)&&/wechatpay\.cn|weixin\.qq\.com|wxp\.woa\.com|wxpay\.tenpay\.com|mp-component\.cdn-go\.cn/i.test(s)) {
+    let u2,h2='',path2='';
+    try{u2=new URL(s);h2=u2.hostname;path2=u2.pathname;}catch(e){}
+    return {type:'WeChat Pay',badgeClass:'badge-wechat',icon:'🟢',confidence:'High',
+      description:'WeChat Pay URL — hosted on official WeChat Pay / Tencent infrastructure. These URLs are used for WeChat Pay payment flows, resource loading, or logging.',
+      fields:[
+        {label:'Source host',val:h2||s.split('/')[2]||s},
+        {label:'Path',val:path2||'—'},
+      ]};
   }
 
   // UnionPay CPM — payload starts with CPV01
