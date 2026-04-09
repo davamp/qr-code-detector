@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Type Detector</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f5f5f4;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #6b6b68;
+    --color-text-tertiary: #9b9b97;
+    --color-border-tertiary: rgba(0,0,0,0.12);
+    --color-border-secondary: rgba(0,0,0,0.22);
+    --color-border-primary: rgba(0,0,0,0.35);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg: #1a1a1a;
+      --color-bg-secondary: #252525;
+      --color-text-primary: #f0f0ee;
+      --color-text-secondary: #9b9b97;
+      --color-text-tertiary: #6b6b68;
+      --color-border-tertiary: rgba(255,255,255,0.10);
+      --color-border-secondary: rgba(255,255,255,0.18);
+      --color-border-primary: rgba(255,255,255,0.30);
+    }
+  }
+  body { font-family: var(--font-sans); background: var(--color-bg); color: var(--color-text-primary); padding: 2rem 1rem; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 2rem; }
+  .header h1 { font-size: 22px; font-weight: 500; margin-bottom: 6px; }
+  .header p { font-size: 14px; color: var(--color-text-secondary); }
+  .tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+  .tab { flex: 1; padding: 10px; font-size: 13px; font-weight: 500; border: 0.5px solid var(--color-border-secondary); border-radius: var(--radius-md); background: var(--color-bg); color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+  .tab.active { background: var(--color-bg-secondary); color: var(--color-text-primary); border-color: var(--color-border-primary); }
+  .tab:hover:not(.active) { background: var(--color-bg-secondary); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .upload-zone { border: 1.5px dashed var(--color-border-secondary); border-radius: var(--radius-lg); padding: 2.5rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--color-border-primary); background: var(--color-bg-secondary); }
+  .upload-icon { width: 40px; height: 40px; margin: 0 auto 12px; opacity: 0.4; }
+  .upload-zone p { font-size: 14px; color: var(--color-text-secondary); }
+  .upload-zone small { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; display: block; }
+  .camera-wrap { position: relative; border-radius: var(--radius-lg); overflow: hidden; background: #000; aspect-ratio: 1; max-width: 420px; margin: 0 auto; }
+  video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .scan-line { position: absolute; left: 10%; right: 10%; height: 2px; background: #1D9E75; top: 20%; animation: scan 2s ease-in-out infinite; }
+  @keyframes scan { 0%,100% { top: 20%; } 50% { top: 75%; } }
+  .scan-corner { position: absolute; width: 28px; height: 28px; border-color: #1D9E75; border-style: solid; }
+  .sc-tl { top: 10%; left: 10%; border-width: 3px 0 0 3px; }
+  .sc-tr { top: 10%; right: 10%; border-width: 3px 3px 0 0; }
+  .sc-bl { bottom: 10%; left: 10%; border-width: 0 0 3px 3px; }
+  .sc-br { bottom: 10%; right: 10%; border-width: 0 3px 3px 0; }
+  .camera-hint { text-align: center; font-size: 13px; color: var(--color-text-secondary); margin-top: 10px; }
+  .cam-btn { display: block; width: 100%; max-width: 200px; margin: 12px auto 0; padding: 10px; font-size: 13px; font-weight: 500; border: 0.5px solid var(--color-border-secondary); border-radius: var(--radius-md); background: var(--color-bg); color: var(--color-text-primary); cursor: pointer; }
+  .cam-btn:hover { background: var(--color-bg-secondary); }
+  .paste-area { width: 100%; min-height: 80px; padding: 12px; font-size: 13px; font-family: var(--font-mono); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--radius-md); background: var(--color-bg); color: var(--color-text-primary); resize: vertical; }
+  .paste-area:focus { outline: none; border-color: var(--color-border-primary); }
+  .paste-label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 8px; display: block; }
+  .detect-btn { display: block; width: 100%; padding: 11px; margin-top: 12px; font-size: 14px; font-weight: 500; border: 0.5px solid var(--color-border-secondary); border-radius: var(--radius-md); background: var(--color-bg); color: var(--color-text-primary); cursor: pointer; }
+  .detect-btn:hover { background: var(--color-bg-secondary); }
+  .result-card { margin-top: 1.5rem; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--radius-lg); overflow: hidden; }
+  .result-header { padding: 14px 16px; }
+  .title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+  .type-badge { font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: var(--radius-md); white-space: nowrap; }
+  .badge-khqr      { background: #E1F5EE; color: #0F6E56; }
+  .badge-qrc       { background: #E6F1FB; color: #185FA5; }
+  .badge-wechat    { background: #EAF3DE; color: #3B6D11; }
+  .badge-up-std    { background: #FAEEDA; color: #854F0B; }
+  .badge-up-nonstd { background: #FAECE7; color: #993C1D; }
+  .badge-unknown   { background: var(--color-bg-secondary); color: var(--color-text-secondary); }
+  .badge-mpm       { background: #EEEDFE; color: #3C3489; }
+  .badge-cpm       { background: #FBEAF0; color: #72243E; }
+  .badge-static    { background: var(--color-bg-secondary); color: var(--color-text-secondary); }
+  .badge-dynamic   { background: #E1F5EE; color: #0F6E56; }
+  .result-title { font-size: 16px; font-weight: 500; }
+  .result-sub { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+  .result-body { border-top: 0.5px solid var(--color-border-tertiary); padding: 14px 16px; }
+  .field-row { display: flex; gap: 12px; padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .field-row:last-child { border-bottom: none; }
+  .field-label { font-size: 12px; color: var(--color-text-secondary); min-width: 130px; flex-shrink: 0; padding-top: 1px; }
+  .field-val { font-size: 13px; word-break: break-all; font-family: var(--font-mono); }
+  .raw-section { margin-top: 1rem; }
+  .raw-toggle { font-size: 12px; color: var(--color-text-secondary); cursor: pointer; border: none; background: none; padding: 0; display: flex; align-items: center; gap: 6px; }
+  .raw-toggle:hover { color: var(--color-text-primary); }
+  .raw-box { display: none; margin-top: 8px; padding: 10px; background: var(--color-bg-secondary); border-radius: var(--radius-md); font-size: 12px; font-family: var(--font-mono); color: var(--color-text-secondary); word-break: break-all; line-height: 1.6; }
+  .raw-box.open { display: block; }
+  .no-result { text-align: center; padding: 2rem; color: var(--color-text-secondary); font-size: 14px; }
+  .preview-img { max-width: 160px; max-height: 160px; border-radius: var(--radius-md); margin: 0 auto 12px; display: block; border: 0.5px solid var(--color-border-tertiary); }
+  .examples { margin-top: 1.5rem; }
+  .examples h3 { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 10px; }
+  .example-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-size: 12px; padding: 5px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: 999px; cursor: pointer; color: var(--color-text-secondary); background: var(--color-bg); }
+  .chip:hover { background: var(--color-bg-secondary); color: var(--color-text-primary); }
+  canvas#qrCanvas, canvas#camCanvas { display: none; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="sr-only">QR Code type detector — KHQR, QRC, WeChat, UnionPay Standard, UnionPay Non-Standard</span>
+  <div class="header">
+    <h1>QR code type detector</h1>
+    <p>KHQR &nbsp;·&nbsp; QRC &nbsp;·&nbsp; WeChat Pay &nbsp;·&nbsp; UnionPay Standard &nbsp;·&nbsp; UnionPay Non-Standard</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('upload')">Upload image</button>
+    <button class="tab" onclick="switchTab('camera')">Camera</button>
+    <button class="tab" onclick="switchTab('text')">Paste text / URL</button>
+  </div>
+
+  <div id="panel-upload" class="panel active">
+    <div class="upload-zone" id="dropZone"
+      onclick="document.getElementById('fileInput').click()"
+      ondragover="onDrag(event,true)" ondragleave="onDrag(event,false)" ondrop="onDrop(event)">
+      <svg class="upload-icon" viewBox="0 0 40 40" fill="none">
+        <rect width="40" height="40" rx="8" fill="var(--color-bg-secondary)"/>
+        <path d="M13 26 L20 12 L27 26" stroke="var(--color-text-secondary)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 21 L24 21" stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round"/>
+        <rect x="11" y="28" width="18" height="1.5" rx="0.75" fill="var(--color-text-tertiary)"/>
+      </svg>
+      <p>Drop a QR code image here, or click to select</p>
+      <small>PNG, JPG, GIF, WebP supported</small>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+    <canvas id="qrCanvas"></canvas>
+  </div>
+
+  <div id="panel-camera" class="panel">
+    <div class="camera-wrap" id="cameraWrap" style="display:none">
+      <video id="camVideo" autoplay playsinline muted></video>
+      <div class="scan-line"></div>
+      <div class="scan-corner sc-tl"></div><div class="scan-corner sc-tr"></div>
+      <div class="scan-corner sc-bl"></div><div class="scan-corner sc-br"></div>
+    </div>
+    <div class="camera-hint" id="camHint">Allow camera access to scan QR codes in real-time</div>
+    <button class="cam-btn" id="camBtn" onclick="toggleCamera()">Start camera</button>
+    <canvas id="camCanvas"></canvas>
+  </div>
+
+  <div id="panel-text" class="panel">
+    <label class="paste-label" for="textInput">Paste decoded QR content, EMV payload, or a UnionPay simulation URL</label>
+    <textarea class="paste-area" id="textInput" placeholder="00020101021229370013...&#10;— or —&#10;https://open.unionpay.com/...?qrCodeType=0&amp;txnAmt=1000..."></textarea>
+    <button class="detect-btn" onclick="detectFromText()">Detect type</button>
+    <div class="examples">
+      <h3>Try an example</h3>
+      <div class="example-chips">
+        <button class="chip" onclick="loadExample('khqr')">KHQR</button>
+        <button class="chip" onclick="loadExample('qrc')">QRC (Singapore)</button>
+        <button class="chip" onclick="loadExample('wechat')">WeChat Pay</button>
+        <button class="chip" onclick="loadExample('up_mpm')">UnionPay Standard MPM</button>
+        <button class="chip" onclick="loadExample('up_cpm')">UnionPay Standard CPM</button>
+        <button class="chip" onclick="loadExample('up_url')">UnionPay URL</button>
+        <button class="chip" onclick="loadExample('up_nonstd')">UnionPay Non-Standard</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultArea"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+const EXAMPLES = {
+  khqr:     '00020101021229370013D15600000000051 0A93FO3230Q31280012D15600000001030812345678520441115302840540523.005802KH5914BEST TRANSPORT6007PHNOM PENH6304A13B',
+  qrc:      '00020101021229370013D15600000000051 0A93FO3230Q31280012D15600000001030812345678520441115303702540523.005802SG5914SAMPLE MERCHANT6009SINGAPORE63041A2B',
+  wechat:   'wxp://f2f0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  up_mpm:   '000201010212293700 15A000000333010101030812345678520458115303156540510.005802CN5914BEST TRANSPORT6007BEIJING6304ABCD',
+  up_cpm:   'CPV01850213D15600000001026A000000333010101021234567890126304FFFF',
+  up_url:   'https://open.unionpay.com/ajweb/help/hymSimulation/qrCode?qrCodeType=0&orderNo=20260409161107&acqCode=90880019&merCatCode=5811&txnAmt=1000&name=%E5%95%86%E6%88%B7%E5%90%8D%E7%A7%B0&reqType=0630001903',
+  up_nonstd:'UPQR:0001CN0002012345678901234567890301010402015802CN5914MERCHANT NAME6007BEIJING540523.005303156',
+};
+
+function switchTab(n) {
+  ['upload','camera','text'].forEach((name,i) => {
+    document.querySelectorAll('.tab')[i].classList.toggle('active', name===n);
+    document.getElementById('panel-'+name).classList.toggle('active', name===n);
+  });
+  if(n!=='camera') stopCamera();
+}
+
+function onDrag(e,over) { e.preventDefault(); document.getElementById('dropZone').classList.toggle('drag',over); }
+function onDrop(e) {
+  e.preventDefault(); document.getElementById('dropZone').classList.remove('drag');
+  const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('image/')) handleFile(f);
+}
+
+function handleFile(file) {
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.getElementById('qrCanvas');
+      c.width=img.width; c.height=img.height;
+      const ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
+      const d=ctx.getImageData(0,0,c.width,c.height);
+      const code=jsQR(d.data,d.width,d.height);
+      if(code) showResult(code.data,ev.target.result);
+      else showError('No QR code found. Try a clearer or higher-resolution image.');
+    };
+    img.src=ev.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+let camStream=null,camTimer=null;
+function toggleCamera() {
+  if(camStream){stopCamera();return;}
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+    camStream=stream;
+    const v=document.getElementById('camVideo'); v.srcObject=stream;
+    document.getElementById('cameraWrap').style.display='block';
+    document.getElementById('camBtn').textContent='Stop camera';
+    document.getElementById('camHint').textContent='Point camera at a QR code...';
+    camTimer=setInterval(scanFrame,300);
+  }).catch(()=>{ document.getElementById('camHint').textContent='Camera access denied.'; });
+}
+function stopCamera() {
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  clearInterval(camTimer);
+  document.getElementById('cameraWrap').style.display='none';
+  document.getElementById('camBtn').textContent='Start camera';
+  document.getElementById('camHint').textContent='Allow camera access to scan QR codes in real-time';
+}
+function scanFrame() {
+  const v=document.getElementById('camVideo'); if(!v.videoWidth) return;
+  const c=document.getElementById('camCanvas'); c.width=v.videoWidth; c.height=v.videoHeight;
+  const ctx=c.getContext('2d'); ctx.drawImage(v,0,0);
+  const d=ctx.getImageData(0,0,c.width,c.height);
+  const code=jsQR(d.data,d.width,d.height);
+  if(code){stopCamera();showResult(code.data,null);}
+}
+
+function detectFromText() {
+  const v=document.getElementById('textInput').value.trim(); if(!v) return; showResult(v,null);
+}
+function loadExample(k) {
+  switchTab('text');
+  document.getElementById('textInput').value=EXAMPLES[k].replace(/\s/g,'');
+  detectFromText();
+}
+
+/* ── helpers ── */
+function tlv(s,tag) {
+  const i=s.indexOf(tag); if(i===-1) return '';
+  const ls=i+tag.length, len=parseInt(s.substring(ls,ls+2),10);
+  if(isNaN(len)) return ''; return s.substring(ls+2,ls+2+len);
+}
+function currName(c){return({'116':'KHR','840':'USD','156':'CNY','702':'SGD','392':'JPY','410':'KRW','458':'MYR','608':'PHP','764':'THB','360':'IDR'}[c])||c;}
+function initMethod(s){const m=tlv(s,'0102');return m==='11'?'Static (reusable)':m==='12'?'Dynamic (single-use)':'';}
+
+/* ── UnionPay URL parser ── */
+function parseUPUrl(s) {
+  let u; try{u=new URL(s);}catch(e){return null;}
+  const p=u.searchParams;
+  const qt=p.get('qrCodeType');
+  // qrCodeType=0 → Standard EMV MPM; 1 → CPM or non-standard
+  const isStd = qt==='0' || qt===null;
+  const amtRaw=p.get('txnAmt');
+  const amt=amtRaw?(parseInt(amtRaw)/100).toFixed(2):null;
+  return {
+    type: isStd?'UnionPay Standard':'UnionPay Non-Standard',
+    badgeClass: isStd?'badge-up-std':'badge-up-nonstd',
+    icon:'🟠', confidence:'High',
+    modeBadge: isStd?'badge-mpm':null,
+    modeLabel: isStd?'MPM (Merchant Presented)':null,
+    dynamicBadge: amt?'badge-dynamic':'badge-static',
+    dynamicLabel: amt?'Dynamic':'Static',
+    description: isStd
+      ? 'UnionPay Standard EMV QR (MPM) — generated via UnionPay open developer portal. qrCodeType=0 confirms EMVCo-compliant merchant-presented mode.'
+      : 'UnionPay Non-Standard — proprietary QR format via UnionPay portal.',
+    fields:[
+      {label:'qrCodeType', val: qt==='0'?'0 — Standard EMV MPM':qt==='1'?'1 — CPM / Non-standard':(qt||'not set')},
+      {label:'Merchant name', val: decodeURIComponent(p.get('name')||'—')},
+      {label:'Order number', val: p.get('orderNo')||'—'},
+      {label:'Amount', val: amt?amt+' (÷100)':'(not set)'},
+      {label:'Acquirer code', val: p.get('acqCode')||'—'},
+      {label:'Merchant category', val: p.get('merCatCode')||'—'},
+      {label:'Request type', val: p.get('reqType')||'—'},
+      {label:'Source host', val: u.hostname},
+    ]
+  };
+}
+
+/* ── main detector ── */
+function detectType(raw) {
+  const s=(raw||'').trim();
+
+  // UnionPay portal URL
+  if(/open\.unionpay\.com|unionpayintl\.com.*qr/i.test(s)) {
+    const r=parseUPUrl(s); if(r) return r;
+  }
+
+  // WeChat Pay
+  if(/^wxp:\/\//i.test(s)||/^weixin:\/\//i.test(s)) {
+    return {type:'WeChat Pay',badgeClass:'badge-wechat',icon:'🟢',confidence:'High',
+      description:'WeChat Pay QR code — uses the wxp:// URI scheme by Tencent.',
+      fields:[{label:'Scheme',val:s.split('://')[0]+'://'},{label:'Payload preview',val:s.substring(s.indexOf('//')+2,s.indexOf('//')+42)+'...'}]};
+  }
+
+  // UnionPay CPM — payload starts with CPV01
+  if(/^CPV01/i.test(s)) {
+    const aid=s.match(/A0{7}333[0-9A-Fa-f]*/);
+    return {type:'UnionPay Standard',badgeClass:'badge-up-std',icon:'🟠',confidence:'High',
+      modeBadge:'badge-cpm',modeLabel:'CPM (Consumer Presented)',
+      description:'UnionPay Standard EMV QR — CPM (Consumer Presented Mode). The cardholder displays this code; the merchant scans it. Payload Format Indicator: CPV01.',
+      fields:[
+        {label:'Format indicator',val:'CPV01 (EMV CPM)'},
+        {label:'Mode',val:'Consumer Presented (CPM)'},
+        {label:'AID',val:aid?aid[0]:'A000000333 (UnionPay)'},
+      ]};
+  }
+
+  // EMV MPM — starts with 000201
+  if(/^000201/.test(s)) {
+    const country=tlv(s,'5802'), merchant=tlv(s,'5914')||tlv(s,'59');
+    const currency=tlv(s,'5303'), amount=tlv(s,'54'), init=initMethod(s);
+    const hasCUP=s.includes('A000000333')||s.includes('A0000003330');
+    const bakong=s.match(/([a-z0-9_.+-]+@[a-z0-9-]+\.nbc\.org\.kh)/i);
+
+    if(country==='KH'||(bakong&&bakong[1])) {
+      return {type:'KHQR',badgeClass:'badge-khqr',icon:'🇰🇭',confidence:'High',
+        modeBadge:'badge-mpm',modeLabel:'MPM (Merchant Presented)',
+        dynamicBadge:init.startsWith('Dynamic')?'badge-dynamic':'badge-static',dynamicLabel:init||'—',
+        description:'Cambodia KHQR — National Bank of Cambodia EMV QR standard. Compatible with Bakong and all KHQR member banks.',
+        fields:[
+          {label:'Country',val:'KH — Cambodia'},
+          {label:'Currency',val:currency?currName(currency)+' ('+currency+')':'—'},
+          {label:'Amount',val:amount||(init.startsWith('Dynamic')?'(in transaction)':'(not set)')},
+          {label:'Merchant name',val:merchant||'—'},
+          {label:'Bakong ID',val:bakong?bakong[1]:'—'},
+          {label:'Initiation',val:init||'—'},
+        ]};
+    }
+
+    if(country==='SG'||currency==='702') {
+      return {type:'QRC (PayNow / NETS)',badgeClass:'badge-qrc',icon:'🔵',confidence:'High',
+        modeBadge:'badge-mpm',modeLabel:'MPM (Merchant Presented)',
+        dynamicBadge:init.startsWith('Dynamic')?'badge-dynamic':'badge-static',dynamicLabel:init||'—',
+        description:'Singapore QRC — PayNow / NETS inter-bank EMVCo-compliant standard.',
+        fields:[
+          {label:'Country',val:'SG — Singapore'},
+          {label:'Currency',val:currency==='702'?'SGD (702)':(currency||'—')},
+          {label:'Amount',val:amount||'(dynamic)'},
+          {label:'Merchant name',val:merchant||'—'},
+          {label:'Initiation',val:init||'—'},
+        ]};
+    }
+
+    if(country==='CN'||hasCUP) {
+      return {type:'UnionPay Standard',badgeClass:'badge-up-std',icon:'🟠',confidence:'High',
+        modeBadge:'badge-mpm',modeLabel:'MPM (Merchant Presented)',
+        dynamicBadge:init.startsWith('Dynamic')?'badge-dynamic':'badge-static',dynamicLabel:init||'—',
+        description:'UnionPay Standard EMV QR (MPM) — EMVCo-compliant merchant-presented format. AID A000000333 identifies UnionPay.',
+        fields:[
+          {label:'Country',val:country==='CN'?'CN — China':(country||'—')},
+          {label:'Currency',val:currency?currName(currency)+' ('+currency+')':'—'},
+          {label:'Amount',val:amount||'(dynamic)'},
+          {label:'Merchant name',val:merchant||'—'},
+          {label:'AID',val:hasCUP?'A000000333 (UnionPay)':'—'},
+          {label:'Initiation',val:init||'—'},
+        ]};
+    }
+
+    return {type:'EMV QR (unknown region)',badgeClass:'badge-unknown',icon:'❓',confidence:'Medium',
+      modeBadge:'badge-mpm',modeLabel:'MPM',
+      description:'EMV QR code detected but country/scheme not matched to a known type.',
+      fields:[
+        {label:'Country',val:country||'—'},{label:'Currency',val:currency?currName(currency)+' ('+currency+')':'—'},
+        {label:'Amount',val:amount||'—'},{label:'Merchant name',val:merchant||'—'},{label:'Initiation',val:init||'—'},
+      ]};
+  }
+
+  // UnionPay Non-Standard proprietary prefix
+  if(/^UPQR:/i.test(s)||/^UP\d/i.test(s)||/^CUP\d/i.test(s)) {
+    return {type:'UnionPay Non-Standard',badgeClass:'badge-up-nonstd',icon:'🟡',confidence:'High',
+      description:'UnionPay proprietary (non-EMV) QR — used in regional or legacy deployments outside the EMVCo standard.',
+      fields:[{label:'Prefix',val:s.substring(0,Math.min(24,s.length))},{label:'Format',val:'Proprietary — non-EMVCo'}]};
+  }
+
+  // WeChat fallback
+  if(/weixin|wechat/i.test(s)) {
+    return {type:'WeChat Pay',badgeClass:'badge-wechat',icon:'🟢',confidence:'Medium',
+      description:'Appears to be WeChat Pay based on keyword match.',fields:[{label:'Raw preview',val:s.substring(0,60)}]};
+  }
+
+  return {type:'Unknown',badgeClass:'badge-unknown',icon:'❓',confidence:'Low',
+    description:'Could not identify this QR code. Paste decoded EMV text, or upload a QR image.',fields:[]};
+}
+
+function showResult(raw,imgSrc) {
+  const info=detectType(raw);
+  const fHtml=info.fields.map(f=>`<div class="field-row"><span class="field-label">${f.label}</span><span class="field-val">${esc(f.val)}</span></div>`).join('');
+  const bHtml=[
+    info.modeBadge?`<span class="type-badge ${info.modeBadge}">${info.modeLabel}</span>`:'',
+    info.dynamicBadge?`<span class="type-badge ${info.dynamicBadge}">${info.dynamicLabel}</span>`:'',
+  ].filter(Boolean).join('');
+  const prev=imgSrc?`<img class="preview-img" src="${imgSrc}" alt="QR preview">`:'';
+  document.getElementById('resultArea').innerHTML=`
+    <div class="result-card">
+      <div class="result-header">
+        <div class="title-row">
+          <span class="result-title">${info.icon} ${info.type}</span>
+          <span class="type-badge ${info.badgeClass}">${info.confidence} confidence</span>
+        </div>
+        ${bHtml?`<div class="badges">${bHtml}</div>`:''}
+        <div class="result-sub">${info.description}</div>
+      </div>
+      <div class="result-body">
+        ${prev}
+        ${fHtml||'<div style="font-size:13px;color:var(--color-text-secondary)">No structured fields extracted.</div>'}
+        <div class="raw-section">
+          <button class="raw-toggle" onclick="toggleRaw(this)">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Show raw content
+          </button>
+          <div class="raw-box" id="rawBox">${esc(raw)}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function showError(msg){document.getElementById('resultArea').innerHTML=`<div class="result-card"><div class="no-result">${msg}</div></div>`;}
+function toggleRaw(btn){const b=document.getElementById('rawBox');b.classList.toggle('open');btn.querySelector('svg').style.transform=b.classList.contains('open')?'rotate(180deg)':'';}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>
