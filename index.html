@@ -147,8 +147,8 @@
   </div>
 
   <div id="panel-text" class="panel">
-    <label class="paste-label" for="textInput">Paste decoded QR content, EMV payload, or a UnionPay simulation URL</label>
-    <textarea class="paste-area" id="textInput" placeholder="00020101021229370013...&#10;— or —&#10;https://open.unionpay.com/...?qrCodeType=0&amp;txnAmt=1000..."></textarea>
+    <label class="paste-label" for="textInput">Paste decoded QR content, EMV payload, or a UnionPay URL</label>
+    <textarea class="paste-area" id="textInput" placeholder="00020101021229370013...&#10;— or —&#10;https://open.unionpay.com/...?qrCodeType=0&amp;txnAmt=1000...&#10;https://qr.95516.com/qrcGtwWeb-web/api/pay?...&#10;https://umps.unionpayintl.com/api/pay?..."></textarea>
     <button class="detect-btn" onclick="detectFromText()">Detect type</button>
     <div class="examples">
       <h3>Try an example</h3>
@@ -158,7 +158,9 @@
         <button class="chip" onclick="loadExample('wechat')">WeChat Pay</button>
         <button class="chip" onclick="loadExample('up_mpm')">UnionPay Standard MPM</button>
         <button class="chip" onclick="loadExample('up_cpm')">UnionPay Standard CPM</button>
-        <button class="chip" onclick="loadExample('up_url')">UnionPay URL</button>
+        <button class="chip" onclick="loadExample('up_url')">UnionPay URL (open.unionpay.com)</button>
+        <button class="chip" onclick="loadExample('up_95516')">UnionPay URL (qr.95516.com)</button>
+        <button class="chip" onclick="loadExample('up_umps')">UnionPay URL (umps.unionpayintl.com)</button>
         <button class="chip" onclick="loadExample('up_nonstd')">UnionPay Non-Standard</button>
       </div>
     </div>
@@ -176,6 +178,8 @@ const EXAMPLES = {
   up_mpm:   '000201010212293700 15A000000333010101030812345678520458115303156540510.005802CN5914BEST TRANSPORT6007BEIJING6304ABCD',
   up_cpm:   'CPV01850213D15600000001026A000000333010101021234567890126304FFFF',
   up_url:   'https://open.unionpay.com/ajweb/help/hymSimulation/qrCode?qrCodeType=0&orderNo=20260409161107&acqCode=90880019&merCatCode=5811&txnAmt=1000&name=%E5%95%86%E6%88%B7%E5%90%8D%E7%A7%B0&reqType=0630001903',
+  up_95516: 'https://qr.95516.com/qrcGtwWeb-web/api/pay?qrCode=00020101021229370015A000000333010101030812345678520458115303156540510.005802CN5914TEST%20MERCHANT6007BEIJING6304ABCD',
+  up_umps:  'https://umps.unionpayintl.com/api/pay?merNo=123456789012345&orderNo=20260409001&txnAmt=2000&currency=840&merName=SAMPLE%20STORE&country=HK',
   up_nonstd:'UPQR:0001CN0002012345678901234567890301010402015802CN5914MERCHANT NAME6007BEIJING540523.005303156',
 };
 
@@ -262,6 +266,57 @@ function initMethod(s){const m=tlv(s,'0102');return m==='11'?'Static (reusable)'
 function parseUPUrl(s) {
   let u; try{u=new URL(s);}catch(e){return null;}
   const p=u.searchParams;
+  const h=u.hostname;
+
+  // qr.95516.com — UnionPay domestic gateway (China)
+  if(/qr\.95516\.com/i.test(h)) {
+    const qrPayload=p.get('qrCode')||p.get('qrcode')||p.get('data')||null;
+    const amtRaw=p.get('txnAmt')||p.get('amt');
+    const amt=amtRaw?(parseInt(amtRaw)/100).toFixed(2):null;
+    const fields=[
+      {label:'Variant',val:'UnionPay Gateway (qr.95516.com)'},
+      {label:'Source host',val:h},
+      {label:'Path',val:u.pathname},
+    ];
+    if(p.get('merNo')) fields.push({label:'Merchant number',val:p.get('merNo')});
+    if(p.get('orderNo')) fields.push({label:'Order number',val:p.get('orderNo')});
+    if(amt) fields.push({label:'Amount',val:amt+' (÷100)'});
+    if(qrPayload) fields.push({label:'Embedded QR payload',val:qrPayload.substring(0,60)+(qrPayload.length>60?'…':'')});
+    return {
+      type:'UnionPay Standard',badgeClass:'badge-up-std',icon:'🟠',confidence:'High',
+      modeBadge:'badge-mpm',modeLabel:'MPM (Merchant Presented)',
+      dynamicBadge:amt?'badge-dynamic':'badge-static',dynamicLabel:amt?'Dynamic':'Static',
+      description:'UnionPay domestic payment gateway QR (qr.95516.com) — used by Chinese banks and merchants for in-store scanning via the UnionPay Cloud QR Gateway.',
+      fields
+    };
+  }
+
+  // umps.unionpayintl.com — UnionPay International UMPS
+  if(/unionpayintl\.com/i.test(h)) {
+    const amtRaw=p.get('txnAmt')||p.get('amt');
+    const amt=amtRaw?(parseInt(amtRaw)/100).toFixed(2):null;
+    const currency=p.get('currency')||p.get('currencyCode');
+    const fields=[
+      {label:'Variant',val:'UnionPay International UMPS'},
+      {label:'Source host',val:h},
+      {label:'Path',val:u.pathname},
+    ];
+    if(p.get('merNo')||p.get('merchantNo')) fields.push({label:'Merchant number',val:p.get('merNo')||p.get('merchantNo')});
+    if(p.get('merName')||p.get('merchantName')) fields.push({label:'Merchant name',val:decodeURIComponent(p.get('merName')||p.get('merchantName'))});
+    if(p.get('orderNo')) fields.push({label:'Order number',val:p.get('orderNo')});
+    if(amt) fields.push({label:'Amount',val:amt+(currency?' '+currName(currency):'')+' (÷100)'});
+    if(currency) fields.push({label:'Currency',val:currName(currency)+' ('+currency+')'});
+    if(p.get('country')) fields.push({label:'Country',val:p.get('country')});
+    return {
+      type:'UnionPay Standard',badgeClass:'badge-up-std',icon:'🟠',confidence:'High',
+      modeBadge:'badge-mpm',modeLabel:'MPM (Merchant Presented)',
+      dynamicBadge:amt?'badge-dynamic':'badge-static',dynamicLabel:amt?'Dynamic':'Static',
+      description:'UnionPay International UMPS QR (umps.unionpayintl.com) — used for cross-border and overseas UnionPay transactions via the UnionPay Mobile Payment Solution.',
+      fields
+    };
+  }
+
+  // open.unionpay.com — developer portal simulation
   const qt=p.get('qrCodeType');
   // qrCodeType=0 → Standard EMV MPM; 1 → CPM or non-standard
   const isStd = qt==='0' || qt===null;
@@ -286,7 +341,7 @@ function parseUPUrl(s) {
       {label:'Acquirer code', val: p.get('acqCode')||'—'},
       {label:'Merchant category', val: p.get('merCatCode')||'—'},
       {label:'Request type', val: p.get('reqType')||'—'},
-      {label:'Source host', val: u.hostname},
+      {label:'Source host', val: h},
     ]
   };
 }
@@ -296,7 +351,7 @@ function detectType(raw) {
   const s=(raw||'').trim();
 
   // UnionPay portal URL
-  if(/open\.unionpay\.com|unionpayintl\.com.*qr/i.test(s)) {
+  if(/open\.unionpay\.com|qr\.95516\.com|unionpayintl\.com/i.test(s)) {
     const r=parseUPUrl(s); if(r) return r;
   }
 
