@@ -928,7 +928,7 @@ private boolean isKhqr(String s) {
       const s = normalizeQrPayload(raw);
 
       // UnionPay portal URL
-      if (/open\.unionpay\.com|qr\.95516\.com|unionpayintl\.com/i.test(s)) {
+      if (/open\.unionpay\.com|qr\.95516\.com|unionpayintl\.com|qr\.chinaums\.com|qr\.yunshanfu\.com/i.test(s)) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — UnionPay portal URL.',
           fields: [{ label: 'Network', val: 'UnionPay (portal URL)' }, { label: 'URL preview', val: s.substring(0, 60) }] };
@@ -946,6 +946,20 @@ private boolean isKhqr(String s) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — WeChat Pay URL.',
           fields: [{ label: 'Network', val: 'WeChat Pay' }, { label: 'Host', val: s.split('/')[2] || s }] };
+      }
+
+      // Alipay
+      if (/qr\.alipay\.com|ds\.alipay\.com|shopcashier\.alipay\.com/i.test(s)) {
+        return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
+          description: 'Payment QR — Alipay.',
+          fields: [{ label: 'Network', val: 'Alipay' }, { label: 'Host', val: s.split('/')[2] || s }] };
+      }
+
+      // Chinese payment aggregators
+      if (/order\.duolabao\.com|qr\.lcsw\.cn|qr\.shouqianba\.com|qr\.swiftpass\.cn|qr\.heepay\.com|pay\.sandpay\.com\.cn|pay\.adapay\.cn|pay\.lianpay\.com\.cn|qr\.99bill\.com|safepay\.jd\.com|mppay\.baidu\.com|pay\.meituan\.com|qr\.allinpay\.com|pay\.yeepay\.com|qr\.lakala\.com|qr\.epay\.com/i.test(s)) {
+        return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
+          description: 'Payment QR — Chinese payment aggregator.',
+          fields: [{ label: 'Network', val: 'QRC (Aggregator)' }, { label: 'Host', val: s.split('/')[2] || s }] };
       }
 
       // UnionPay CPM — payload starts with CPV01
