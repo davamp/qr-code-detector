@@ -607,14 +607,24 @@ public enum QrType { KHQR, QRC, UNKNOWN }
 public QrType detectType(String raw) {
     String s = normalizeQrPayload(raw);
 
-    // UnionPay portal URLs
-    if (s.matches("(?i).*(open\\.unionpay\\.com|qr\\.95516\\.com|unionpayintl\\.com).*"))
+    // UnionPay portal URLs + Cloud QuickPass
+    if (s.matches("(?i).*(open\\.unionpay\\.com|qr\\.95516\\.com|unionpayintl\\.com|qr\\.chinaums\\.com|qr\\.yunshanfu\\.com).*"))
         return QrType.QRC;
 
     // WeChat Pay — URI scheme or known URL host
     if (s.matches("(?i)^(wxp|weixin)://.*")
-            || (s.matches("(?i)^https?://.*")
-                &amp;&amp; s.matches("(?i).*(wechatpay\\.cn|weixin\\.qq\\.com|wxp\\.woa\\.com).*")))
+            || s.matches("(?i).*(wechatpay\\.cn|weixin\\.qq\\.com|wxp\\.woa\\.com|wxpay\\.tenpay\\.com).*"))
+        return QrType.QRC;
+
+    // Alipay
+    if (s.matches("(?i).*(qr\\.alipay\\.com|ds\\.alipay\\.com|shopcashier\\.alipay\\.com).*"))
+        return QrType.QRC;
+
+    // Chinese payment aggregators (JD Pay, Baidu Pay, Meituan, Allinpay, YeePay, Lakala, ePaylinks, etc.)
+    if (s.matches("(?i).*(order\\.duolabao\\.com|qr\\.lcsw\\.cn|qr\\.shouqianba\\.com|qr\\.swiftpass\\.cn"
+            + "|qr\\.heepay\\.com|pay\\.sandpay\\.com\\.cn|pay\\.adapay\\.cn|pay\\.lianpay\\.com\\.cn"
+            + "|qr\\.99bill\\.com|safepay\\.jd\\.com|mppay\\.baidu\\.com|pay\\.meituan\\.com"
+            + "|qr\\.allinpay\\.com|pay\\.yeepay\\.com|qr\\.lakala\\.com|qr\\.epay\\.com).*"))
         return QrType.QRC;
 
     // UnionPay CPM or non-standard prefix
