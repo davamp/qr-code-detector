@@ -781,6 +781,8 @@ private boolean isKhqr(String s) {
       const t = (s || '').trim();
       if (!t) return '';
       if (/^https?:\/\//i.test(t) || /^wxp:\/\//i.test(t) || /^weixin:\/\//i.test(t)) return t;
+      // bare hostname (no scheme) — treat as https:// URL
+      if (/^[a-z0-9][a-z0-9\-.]+(\.[a-z]{2,})([\/\?#].*)?$/i.test(t)) return 'https://' + t;
       return t.replace(/[\s\u00A0]+/g, '');
     }
 
@@ -939,8 +941,8 @@ private boolean isKhqr(String s) {
           fields: [{ label: 'Network', val: 'WeChat Pay' }, { label: 'Scheme', val: s.split('://')[0] + '://' }] };
       }
 
-      // WeChat Pay — URL-based
-      if (/^https?:\/\//i.test(s) && /wechatpay\.cn|weixin\.qq\.com|wxp\.woa\.com|wxpay\.tenpay\.com|mp-component\.cdn-go\.cn/i.test(s)) {
+      // WeChat Pay — URL-based (with or without scheme)
+      if (/wechatpay\.cn|weixin\.qq\.com|wxp\.woa\.com|wxpay\.tenpay\.com|mp-component\.cdn-go\.cn/i.test(s)) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — WeChat Pay URL.',
           fields: [{ label: 'Network', val: 'WeChat Pay' }, { label: 'Host', val: s.split('/')[2] || s }] };
