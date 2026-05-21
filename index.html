@@ -956,7 +956,7 @@ private String normalizeQrPayload(String raw) {
           : crc.valid ? 'Valid (' + crc.actual + ')'
           : 'Invalid — stored ' + crc.actual + ', expected ' + crc.expected;
 
-        if (country === 'KH' || s.contains('5303116') || (bakong && bakong[1]) || hasKhSuffix) {
+        if (country === 'KH' || s.includes('5303116') || (bakong && bakong[1]) || hasKhSuffix) {
           return {
             type: QrType.KHQR, badgeClass: 'badge-khqr', icon: '🇰🇭', confidence: 'High',
             modeBadge: initRaw === '12' ? 'badge-dynamic' : 'badge-static',
