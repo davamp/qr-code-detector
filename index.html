@@ -169,15 +169,8 @@
     }
 
     @keyframes scan {
-
-      0%,
-      100% {
-        top: 20%;
-      }
-
-      50% {
-        top: 75%;
-      }
+      0%, 100% { top: 20%; }
+      50% { top: 75%; }
     }
 
     .scan-corner {
@@ -188,29 +181,10 @@
       border-style: solid;
     }
 
-    .sc-tl {
-      top: 10%;
-      left: 10%;
-      border-width: 3px 0 0 3px;
-    }
-
-    .sc-tr {
-      top: 10%;
-      right: 10%;
-      border-width: 3px 3px 0 0;
-    }
-
-    .sc-bl {
-      bottom: 10%;
-      left: 10%;
-      border-width: 0 0 3px 3px;
-    }
-
-    .sc-br {
-      bottom: 10%;
-      right: 10%;
-      border-width: 0 3px 3px 0;
-    }
+    .sc-tl { top: 10%; left: 10%; border-width: 3px 0 0 3px; }
+    .sc-tr { top: 10%; right: 10%; border-width: 3px 3px 0 0; }
+    .sc-bl { bottom: 10%; left: 10%; border-width: 0 0 3px 3px; }
+    .sc-br { bottom: 10%; right: 10%; border-width: 0 3px 3px 0; }
 
     .camera-hint {
       text-align: center;
@@ -354,55 +328,19 @@
       white-space: nowrap;
     }
 
-    .badge-khqr {
-      background: #E1F5EE;
-      color: #0F6E56;
-    }
-
-    .badge-qrc {
-      background: #E6F1FB;
-      color: #185FA5;
-    }
-
-    .badge-wechat {
-      background: #EAF3DE;
-      color: #3B6D11;
-    }
-
-    .badge-up-std {
-      background: #FAEEDA;
-      color: #854F0B;
-    }
-
-    .badge-up-nonstd {
-      background: #FAECE7;
-      color: #993C1D;
-    }
-
-    .badge-unknown {
-      background: var(--color-bg-secondary);
-      color: var(--color-text-secondary);
-    }
-
-    .badge-mpm {
-      background: #EEEDFE;
-      color: #3C3489;
-    }
-
-    .badge-cpm {
-      background: #FBEAF0;
-      color: #72243E;
-    }
-
-    .badge-static {
-      background: var(--color-bg-secondary);
-      color: var(--color-text-secondary);
-    }
-
-    .badge-dynamic {
-      background: #E1F5EE;
-      color: #0F6E56;
-    }
+    .badge-khqr    { background: #E1F5EE; color: #0F6E56; }
+    .badge-qrc     { background: #E6F1FB; color: #185FA5; }
+    .badge-wechat  { background: #EAF3DE; color: #3B6D11; }
+    .badge-up-std  { background: #FAEEDA; color: #854F0B; }
+    .badge-up-nonstd { background: #FAECE7; color: #993C1D; }
+    .badge-unknown { background: var(--color-bg-secondary); color: var(--color-text-secondary); }
+    .badge-mpm     { background: #EEEDFE; color: #3C3489; }
+    .badge-cpm     { background: #FBEAF0; color: #72243E; }
+    .badge-static  { background: var(--color-bg-secondary); color: var(--color-text-secondary); }
+    .badge-dynamic { background: #E1F5EE; color: #0F6E56; }
+    .badge-conf-high   { background: #E1F5EE; color: #0F6E56; }
+    .badge-conf-medium { background: #FAEEDA; color: #854F0B; }
+    .badge-conf-low    { background: var(--color-bg-secondary); color: var(--color-text-secondary); }
 
     .result-title {
       font-size: 16px;
@@ -443,6 +381,15 @@
       font-size: 13px;
       word-break: break-all;
       font-family: var(--font-mono);
+    }
+
+    .field-val.hi {
+      color: #0F6E56;
+      font-weight: 500;
+    }
+
+    .field-val.err {
+      color: #A32D2D;
     }
 
     .raw-section {
@@ -553,8 +500,7 @@
     <span class="sr-only">QR Code type detector — KHQR, QRC, WeChat, UnionPay Standard, UnionPay Non-Standard</span>
     <div class="header">
       <h1>QR code type detector</h1>
-      <p>KHQR &nbsp;·&nbsp; QRC &nbsp;·&nbsp; WeChat Pay &nbsp;·&nbsp; UnionPay Standard &nbsp;·&nbsp; UnionPay
-        Non-Standard</p>
+      <p>KHQR &nbsp;·&nbsp; QRC &nbsp;·&nbsp; WeChat Pay &nbsp;·&nbsp; UnionPay Standard &nbsp;·&nbsp; UnionPay Non-Standard</p>
     </div>
 
     <div class="tabs">
@@ -599,46 +545,58 @@
       <textarea class="paste-area" id="textInput"
         placeholder="00020101021229370013...&#10;— or —&#10;https://open.unionpay.com/...?qrCodeType=0&amp;txnAmt=1000...&#10;https://qr.95516.com/qrcGtwWeb-web/api/pay?...&#10;https://umps.unionpayintl.com/api/pay?..."></textarea>
       <button class="detect-btn" onclick="detectFromText()">Detect type</button>
+
       <div class="snippet-box">
-        <div class="snippet-title" onclick="this.parentElement.classList.toggle('open')" style="cursor:pointer;user-select:none;">Snippet: JavaScript → Spring Boot Java <span class="snippet-toggle-icon">▸</span></div>
+        <div class="snippet-title" onclick="this.parentElement.classList.toggle('open')" style="cursor:pointer;user-select:none;">
+          Snippet: JavaScript → Spring Boot Java <span class="snippet-toggle-icon">▸</span>
+        </div>
         <div class="snippet-code">// Java (Spring Boot) — 3-type enum
 public enum QrType { KHQR, QRC, UNKNOWN }
 
 public QrType detectType(String raw) {
     String s = normalizeQrPayload(raw);
+    if (s.isEmpty()) return QrType.UNKNOWN;
 
     // UnionPay portal URLs + Cloud QuickPass
     if (s.matches("(?i).*(open\\.unionpay\\.com|qr\\.95516\\.com|unionpayintl\\.com|qr\\.chinaums\\.com|qr\\.yunshanfu\\.com).*"))
         return QrType.QRC;
 
-    // WeChat Pay — URI scheme or known URL host
-    if (s.matches("(?i)^(wxp|weixin)://.*")
-            || s.matches("(?i).*(wechatpay\\.cn|weixin\\.qq\\.com|wxp\\.woa\\.com|wxpay\\.tenpay\\.com).*"))
+    // WeChat Pay — URI scheme
+    if (s.matches("(?i)^(wxp|weixin)://.*"))
+        return QrType.QRC;
+
+    // WeChat Pay — URL host
+    if (s.matches("(?i).*(wechatpay\\.cn|weixin\\.qq\\.com|wxp\\.woa\\.com|wxpay\\.tenpay\\.com|mp-component\\.cdn-go\\.cn).*"))
         return QrType.QRC;
 
     // Alipay
     if (s.matches("(?i).*(qr\\.alipay\\.com|ds\\.alipay\\.com|shopcashier\\.alipay\\.com).*"))
         return QrType.QRC;
 
-    // Chinese payment aggregators (JD Pay, Baidu Pay, Meituan, Allinpay, YeePay, Lakala, ePaylinks, etc.)
+    // Chinese payment aggregators
     if (s.matches("(?i).*(order\\.duolabao\\.com|qr\\.lcsw\\.cn|qr\\.shouqianba\\.com|qr\\.swiftpass\\.cn"
             + "|qr\\.heepay\\.com|pay\\.sandpay\\.com\\.cn|pay\\.adapay\\.cn|pay\\.lianpay\\.com\\.cn"
             + "|qr\\.99bill\\.com|safepay\\.jd\\.com|mppay\\.baidu\\.com|pay\\.meituan\\.com"
             + "|qr\\.allinpay\\.com|pay\\.yeepay\\.com|qr\\.lakala\\.com|qr\\.epay\\.com).*"))
         return QrType.QRC;
 
-    // UnionPay CPM or non-standard prefix
-    if (s.matches("(?i)^CPV01.*") || s.matches("(?i)^(UPQR:|UP\\d|CUP\\d).*"))
+    // UnionPay CPM
+    if (s.matches("(?i)^CPV01.*"))
         return QrType.QRC;
 
     // EMV MPM (000201)
     if (s.startsWith("000201")) {
-        if (isKhqr(s)) return QrType.KHQR; // country=KH / Bakong ID / KH bank suffix
-        return QrType.QRC;                  // SG PayNow, UnionPay Std, other EMV
+        if (isKhqr(s)) return QrType.KHQR;
+        return QrType.QRC;
     }
 
+    // UnionPay non-standard proprietary prefix
+    if (s.matches("(?i)^(UPQR:|UP\\d|CUP\\d).*"))
+        return QrType.QRC;
+
     // WeChat keyword fallback
-    if (s.matches("(?i).*(weixin|wechat).*")) return QrType.QRC;
+    if (s.matches("(?i).*(weixin|wechat).*"))
+        return QrType.QRC;
 
     return QrType.UNKNOWN;
 }
@@ -654,13 +612,45 @@ private boolean isKhqr(String s) {
     // 3. Bakong ID (*@*.nbc.org.kh)
     if (s.matches("(?i).*[a-z0-9_.+\\-]+@[a-z0-9\\-]+\\.nbc\\.org\\.kh.*")) return true;
 
-    // 4. KH bank account suffixes (NBC KHQR member list)
-    return s.matches("(?i).*@(ab|ac|acb|aclb|aci|aeon|am|ar|as|"
+    // 4. KH bank account suffixes — NBC KHQR member list
+    return s.matches("(?i).*@(ab|ac|acb|aclb|aci|aeon|am|ar|ardb|as|"
         + "bi|bk|br|ca|cb|cbc|ch|cm|co|cp|da|em|fc|ft|ftb|"
         + "hf|hk|hl|ib|jt|kb|ke|lo|lolc|ly|mb|mo|ms|"
         + "or|os|pi|pp|ppc|pw|rdb|sab|scb|sg|sh|sp|su|"
         + "tr|uc|up|wbf|wing|khqr).*");
+}
+
+// Normalize — URLs pass through untouched; EMV payloads only strip whitespace
+private String normalizeQrPayload(String raw) {
+    if (raw == null) return "";
+    String t = raw.trim();
+    if (t.isEmpty()) return "";
+    // URLs — return as-is
+    if (t.matches("(?i)^https?://.*")
+            || t.matches("(?i)^wxp://.*")
+            || t.matches("(?i)^weixin://.*"))
+        return t;
+    // Bare hostname (no scheme) — treat as https://
+    if (t.matches("(?i)^[a-z0-9][a-z0-9\\-.]+\\.[a-z]{2,}([/?#].*)?"))
+        return "https://" + t;
+    // EMV payload — strip whitespace only, preserve everything else
+    return t.replaceAll("[\\s\\u00A0]+", "");
 }</div>
+      </div>
+
+      <div class="examples">
+        <h3>Try an example</h3>
+        <div class="example-chips">
+          <span class="chip" onclick="loadExample('khqr')">KHQR static</span>
+          <span class="chip" onclick="loadExample('qrc')">QRC (SG PayNow)</span>
+          <span class="chip" onclick="loadExample('wechat')">WeChat Pay</span>
+          <span class="chip" onclick="loadExample('up_mpm')">UnionPay MPM</span>
+          <span class="chip" onclick="loadExample('up_cpm')">UnionPay CPM</span>
+          <span class="chip" onclick="loadExample('up_url')">UnionPay URL</span>
+          <span class="chip" onclick="loadExample('up_95516')">qr.95516.com</span>
+          <span class="chip" onclick="loadExample('up_umps')">UMPS</span>
+          <span class="chip" onclick="loadExample('up_nonstd')">UnionPay non-std</span>
+        </div>
       </div>
     </div>
 
@@ -670,15 +660,15 @@ private boolean isKhqr(String s) {
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script>
     const EXAMPLES = {
-      khqr: '00020101021229370013D15600000000051 0A93FO3230Q31280012D15600000001030812345678520441115302840540523.005802KH5914BEST TRANSPORT6007PHNOM PENH6304A13B',
-      qrc: '00020101021229370013D15600000000051 0A93FO3230Q31280012D15600000001030812345678520441115303702540523.005802SG5914SAMPLE MERCHANT6009SINGAPORE63041A2B',
-      wechat: 'wxp://f2f0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-      up_mpm: '000201010212293700 15A000000333010101030812345678520458115303156540510.005802CN5914BEST TRANSPORT6007BEIJING6304ABCD',
-      up_cpm: 'CPV01850213D15600000001026A000000333010101021234567890126304FFFF',
-      up_url: 'https://open.unionpay.com/ajweb/help/hymSimulation/qrCode?qrCodeType=0&orderNo=20260409161107&acqCode=90880019&merCatCode=5811&txnAmt=1000&name=%E5%95%86%E6%88%B7%E5%90%8D%E7%A7%B0&reqType=0630001903',
+      khqr:     '00020101021229370013D15600000000051 0A93FO3230Q31280012D15600000001030812345678520441115302840540523.005802KH5914BEST TRANSPORT6007PHNOM PENH6304A13B',
+      qrc:      '00020101021229370013D15600000000051 0A93FO3230Q31280012D15600000001030812345678520441115303702540523.005802SG5914SAMPLE MERCHANT6009SINGAPORE63041A2B',
+      wechat:   'wxp://f2f0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      up_mpm:   '000201010212293700 15A000000333010101030812345678520458115303156540510.005802CN5914BEST TRANSPORT6007BEIJING6304ABCD',
+      up_cpm:   'CPV01850213D15600000001026A000000333010101021234567890126304FFFF',
+      up_url:   'https://open.unionpay.com/ajweb/help/hymSimulation/qrCode?qrCodeType=0&orderNo=20260409161107&acqCode=90880019&merCatCode=5811&txnAmt=1000&name=%E5%95%86%E6%88%B7%E5%90%8D%E7%A7%B0&reqType=0630001903',
       up_95516: 'https://qr.95516.com/qrcGtwWeb-web/api/pay?qrCode=00020101021229370015A000000333010101030812345678520458115303156540510.005802CN5914TEST%20MERCHANT6007BEIJING6304ABCD',
-      up_umps: 'https://umps.unionpayintl.com/api/pay?merNo=123456789012345&orderNo=20260409001&txnAmt=2000&currency=840&merName=SAMPLE%20STORE&country=HK',
-      up_nonstd: 'UPQR:0001CN0002012345678901234567890301010402015802CN5914MERCHANT NAME6007BEIJING540523.005303156',
+      up_umps:  'https://umps.unionpayintl.com/api/pay?merNo=123456789012345&orderNo=20260409001&txnAmt=2000&currency=840&merName=SAMPLE%20STORE&country=HK',
+      up_nonstd:'UPQR:0001CN0002012345678901234567890301010402015802CN5914MERCHANT NAME6007BEIJING540523.005303156',
     };
 
     function switchTab(n) {
@@ -714,7 +704,7 @@ private boolean isKhqr(String s) {
       r.readAsDataURL(file);
     }
 
-    let camStream = null, camTimer = null;
+    let camStream = null, camTimer = null, camBusy = false;
     function toggleCamera() {
       if (camStream) { stopCamera(); return; }
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(stream => {
@@ -728,41 +718,34 @@ private boolean isKhqr(String s) {
     }
     function stopCamera() {
       if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-      clearInterval(camTimer);
+      clearInterval(camTimer); camBusy = false;
       document.getElementById('cameraWrap').style.display = 'none';
       document.getElementById('camBtn').textContent = 'Start camera';
       document.getElementById('camHint').textContent = 'Allow camera access to scan QR codes in real-time';
     }
     function scanFrame() {
+      if (camBusy) return;
       const v = document.getElementById('camVideo'); if (!v.videoWidth) return;
       const c = document.getElementById('camCanvas'); c.width = v.videoWidth; c.height = v.videoHeight;
       const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0);
       const d = ctx.getImageData(0, 0, c.width, c.height);
       const code = jsQR(d.data, d.width, d.height);
-      if (code) { stopCamera(); showResult(code.data, null); }
+      if (code) { camBusy = true; stopCamera(); showResult(code.data, null); }
     }
 
     function detectFromText() {
       const v = document.getElementById('textInput').value.trim();
       if (!v) return;
-
       const items = splitPayloads(v);
-      if (!items.length) {
-        showError('No valid payload found. Paste EMV payload(s) or payment URL(s).');
-        return;
-      }
-
-      if (items.length === 1) {
-        showResult(items[0], null);
-        return;
-      }
-
+      if (!items.length) { showError('No valid payload found. Paste EMV payload(s) or payment URL(s).'); return; }
+      if (items.length === 1) { showResult(items[0], null); return; }
       showBatchResults(items);
     }
 
     function loadExample(k) {
       switchTab('text');
-      document.getElementById('textInput').value = EXAMPLES[k].replace(/\s/g, '');
+      // Strip only tabs/newlines added for readability in the source; preserve spaces inside EMV fields
+      document.getElementById('textInput').value = EXAMPLES[k].replace(/[\t\n\r]/g, '');
       detectFromText();
     }
 
@@ -770,29 +753,21 @@ private boolean isKhqr(String s) {
     function splitPayloads(rawText) {
       const trimmed = (rawText || '').trim();
       if (!trimmed) return [];
-
-      let blocks = trimmed
-        .split(/\n\s*\n+/)
-        .map(v => v.trim())
-        .filter(Boolean);
-
-      // Fallback for lists where each payload is on a single line.
+      let blocks = trimmed.split(/\n\s*\n+/).map(v => v.trim()).filter(Boolean);
       if (blocks.length === 1 && /\n/.test(trimmed)) {
-        blocks = trimmed
-          .split(/\n+/)
-          .map(v => v.trim())
-          .filter(Boolean);
+        blocks = trimmed.split(/\n+/).map(v => v.trim()).filter(Boolean);
       }
-
       return blocks.filter(v => !/^n\/?a$/i.test(v));
     }
 
     function normalizeQrPayload(s) {
       const t = (s || '').trim();
       if (!t) return '';
+      // URLs — return as-is
       if (/^https?:\/\//i.test(t) || /^wxp:\/\//i.test(t) || /^weixin:\/\//i.test(t)) return t;
-      // bare hostname (no scheme) — treat as https:// URL
+      // Bare hostname — treat as https://
       if (/^[a-z0-9][a-z0-9\-.]+(\.[a-z]{2,})([\/\?#].*)?$/i.test(t)) return 'https://' + t;
+      // EMV payload — strip whitespace only
       return t.replace(/[\s\u00A0]+/g, '');
     }
 
@@ -802,17 +777,15 @@ private boolean isKhqr(String s) {
       if (isNaN(len)) return ''; return s.substring(ls + 2, ls + 2 + len);
     }
     function parseEmvTlv(s) {
-      const out = [];
-      let i = 0;
+      const out = []; let i = 0;
       while (i + 4 <= s.length) {
         const tag = s.substring(i, i + 2);
         const lenStr = s.substring(i + 2, i + 4);
         if (!/^\d{2}$/.test(tag) || !/^\d{2}$/.test(lenStr)) break;
         const len = parseInt(lenStr, 10);
-        const valueStart = i + 4;
-        const valueEnd = valueStart + len;
+        const valueEnd = i + 4 + len;
         if (valueEnd > s.length) break;
-        out.push({ tag, len, value: s.substring(valueStart, valueEnd) });
+        out.push({ tag, len, value: s.substring(i + 4, valueEnd) });
         i = valueEnd;
       }
       return out;
@@ -820,10 +793,6 @@ private boolean isKhqr(String s) {
     function tlvGet(entries, tag) {
       const row = entries.find(e => e.tag === tag);
       return row ? row.value : '';
-    }
-    function decodeMerchantName(entries) {
-      const merchant = tlvGet(entries, '59');
-      return merchant || '—';
     }
     function crc16CcittFalse(data) {
       let crc = 0xFFFF;
@@ -840,20 +809,21 @@ private boolean isKhqr(String s) {
       const m = s.match(/6304([0-9A-Fa-f]{4})$/);
       if (!m) return { present: false, valid: false, expected: '', actual: '' };
       const actual = m[1].toUpperCase();
-      const withoutCrcValue = s.slice(0, -4);
-      const expected = crc16CcittFalse(withoutCrcValue);
+      const expected = crc16CcittFalse(s.slice(0, -4));
       return { present: true, valid: actual === expected, expected, actual };
     }
-    function currName(c) { return ({ '116': 'KHR', '840': 'USD', '156': 'CNY', '702': 'SGD', '392': 'JPY', '410': 'KRW', '458': 'MYR', '608': 'PHP', '764': 'THB', '360': 'IDR' }[c]) || c; }
-    function initMethod(m) { return m === '11' ? 'Static (reusable)' : m === '12' ? 'Dynamic (single-use)' : ''; }
+    function currName(c) {
+      return ({ '116':'KHR','840':'USD','156':'CNY','702':'SGD','392':'JPY','410':'KRW','458':'MYR','608':'PHP','764':'THB','360':'IDR' }[c]) || c;
+    }
+    function initMethod(m) {
+      return m === '11' ? 'Static (reusable)' : m === '12' ? 'Dynamic (single-use)' : '';
+    }
 
     /* ── UnionPay URL parser ── */
     function parseUPUrl(s) {
       let u; try { u = new URL(s); } catch (e) { return null; }
-      const p = u.searchParams;
-      const h = u.hostname;
+      const p = u.searchParams, h = u.hostname;
 
-      // qr.95516.com — UnionPay domestic gateway (China)
       if (/qr\.95516\.com/i.test(h)) {
         const qrPayload = p.get('qrCode') || p.get('qrcode') || p.get('data') || null;
         const amtRaw = p.get('txnAmt') || p.get('amt');
@@ -863,20 +833,19 @@ private boolean isKhqr(String s) {
           { label: 'Source host', val: h },
           { label: 'Path', val: u.pathname },
         ];
-        if (p.get('merNo')) fields.push({ label: 'Merchant number', val: p.get('merNo') });
+        if (p.get('merNo'))   fields.push({ label: 'Merchant number', val: p.get('merNo') });
         if (p.get('orderNo')) fields.push({ label: 'Order number', val: p.get('orderNo') });
-        if (amt) fields.push({ label: 'Amount', val: amt + ' (÷100)' });
-        if (qrPayload) fields.push({ label: 'Embedded QR payload', val: qrPayload.substring(0, 60) + (qrPayload.length > 60 ? '…' : '') });
+        if (amt)              fields.push({ label: 'Amount', val: amt + ' (÷100)' });
+        if (qrPayload)        fields.push({ label: 'Embedded QR payload', val: qrPayload.substring(0, 60) + (qrPayload.length > 60 ? '…' : '') });
         return {
           type: 'UnionPay Standard', badgeClass: 'badge-up-std', icon: '🟠', confidence: 'High',
-          modeBadge: 'badge-mpm', modeLabel: 'MPM (Merchant Presented)',
+          modeBadge: 'badge-mpm', modeLabel: 'MPM',
           dynamicBadge: amt ? 'badge-dynamic' : 'badge-static', dynamicLabel: amt ? 'Dynamic' : 'Static',
-          description: 'UnionPay domestic payment gateway QR (qr.95516.com) — used by Chinese banks and merchants for in-store scanning via the UnionPay Cloud QR Gateway.',
+          description: 'UnionPay domestic payment gateway QR (qr.95516.com).',
           fields
         };
       }
 
-      // umps.unionpayintl.com — UnionPay International UMPS
       if (/unionpayintl\.com/i.test(h)) {
         const amtRaw = p.get('txnAmt') || p.get('amt');
         const amt = amtRaw ? (parseInt(amtRaw) / 100).toFixed(2) : null;
@@ -889,21 +858,19 @@ private boolean isKhqr(String s) {
         if (p.get('merNo') || p.get('merchantNo')) fields.push({ label: 'Merchant number', val: p.get('merNo') || p.get('merchantNo') });
         if (p.get('merName') || p.get('merchantName')) fields.push({ label: 'Merchant name', val: decodeURIComponent(p.get('merName') || p.get('merchantName')) });
         if (p.get('orderNo')) fields.push({ label: 'Order number', val: p.get('orderNo') });
-        if (amt) fields.push({ label: 'Amount', val: amt + (currency ? ' ' + currName(currency) : '') + ' (÷100)' });
+        if (amt)    fields.push({ label: 'Amount', val: amt + (currency ? ' ' + currName(currency) : '') + ' (÷100)' });
         if (currency) fields.push({ label: 'Currency', val: currName(currency) + ' (' + currency + ')' });
         if (p.get('country')) fields.push({ label: 'Country', val: p.get('country') });
         return {
           type: 'UnionPay Standard', badgeClass: 'badge-up-std', icon: '🟠', confidence: 'High',
-          modeBadge: 'badge-mpm', modeLabel: 'MPM (Merchant Presented)',
+          modeBadge: 'badge-mpm', modeLabel: 'MPM',
           dynamicBadge: amt ? 'badge-dynamic' : 'badge-static', dynamicLabel: amt ? 'Dynamic' : 'Static',
-          description: 'UnionPay International UMPS QR (umps.unionpayintl.com) — used for cross-border and overseas UnionPay transactions via the UnionPay Mobile Payment Solution.',
+          description: 'UnionPay International UMPS QR (umps.unionpayintl.com).',
           fields
         };
       }
 
-      // open.unionpay.com — developer portal simulation
       const qt = p.get('qrCodeType');
-      // qrCodeType=0 → Standard EMV MPM; 1 → CPM or non-standard
       const isStd = qt === '0' || qt === null;
       const amtRaw = p.get('txnAmt');
       const amt = amtRaw ? (parseInt(amtRaw) / 100).toFixed(2) : null;
@@ -911,22 +878,20 @@ private boolean isKhqr(String s) {
         type: isStd ? 'UnionPay Standard' : 'UnionPay Non-Standard',
         badgeClass: isStd ? 'badge-up-std' : 'badge-up-nonstd',
         icon: '🟠', confidence: 'High',
-        modeBadge: isStd ? 'badge-mpm' : null,
-        modeLabel: isStd ? 'MPM (Merchant Presented)' : null,
-        dynamicBadge: amt ? 'badge-dynamic' : 'badge-static',
-        dynamicLabel: amt ? 'Dynamic' : 'Static',
+        modeBadge: isStd ? 'badge-mpm' : null, modeLabel: isStd ? 'MPM' : null,
+        dynamicBadge: amt ? 'badge-dynamic' : 'badge-static', dynamicLabel: amt ? 'Dynamic' : 'Static',
         description: isStd
-          ? 'UnionPay Standard EMV QR (MPM) — generated via UnionPay open developer portal. qrCodeType=0 confirms EMVCo-compliant merchant-presented mode.'
+          ? 'UnionPay Standard EMV QR (MPM) — UnionPay open developer portal.'
           : 'UnionPay Non-Standard — proprietary QR format via UnionPay portal.',
         fields: [
-          { label: 'qrCodeType', val: qt === '0' ? '0 — Standard EMV MPM' : qt === '1' ? '1 — CPM / Non-standard' : (qt || 'not set') },
-          { label: 'Merchant name', val: decodeURIComponent(p.get('name') || '—') },
-          { label: 'Order number', val: p.get('orderNo') || '—' },
-          { label: 'Amount', val: amt ? amt + ' (÷100)' : '(not set)' },
-          { label: 'Acquirer code', val: p.get('acqCode') || '—' },
+          { label: 'qrCodeType',        val: qt === '0' ? '0 — Standard EMV MPM' : qt === '1' ? '1 — CPM / Non-standard' : (qt || 'not set') },
+          { label: 'Merchant name',     val: decodeURIComponent(p.get('name') || '—') },
+          { label: 'Order number',      val: p.get('orderNo') || '—' },
+          { label: 'Amount',            val: amt ? amt + ' (÷100)' : '(not set)' },
+          { label: 'Acquirer code',     val: p.get('acqCode') || '—' },
           { label: 'Merchant category', val: p.get('merCatCode') || '—' },
-          { label: 'Request type', val: p.get('reqType') || '—' },
-          { label: 'Source host', val: h },
+          { label: 'Request type',      val: p.get('reqType') || '—' },
+          { label: 'Source host',       val: h },
         ]
       };
     }
@@ -937,72 +902,75 @@ private boolean isKhqr(String s) {
     function detectType(raw) {
       const s = normalizeQrPayload(raw);
 
-      // UnionPay portal URL
       if (/open\.unionpay\.com|qr\.95516\.com|unionpayintl\.com|qr\.chinaums\.com|qr\.yunshanfu\.com/i.test(s)) {
+        const upInfo = parseUPUrl(s);
+        if (upInfo) return upInfo;
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — UnionPay portal URL.',
           fields: [{ label: 'Network', val: 'UnionPay (portal URL)' }, { label: 'URL preview', val: s.substring(0, 60) }] };
       }
 
-      // WeChat Pay — URI scheme
       if (/^wxp:\/\//i.test(s) || /^weixin:\/\//i.test(s)) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — WeChat Pay URI scheme.',
           fields: [{ label: 'Network', val: 'WeChat Pay' }, { label: 'Scheme', val: s.split('://')[0] + '://' }] };
       }
 
-      // WeChat Pay — URL-based (with or without scheme)
       if (/wechatpay\.cn|weixin\.qq\.com|wxp\.woa\.com|wxpay\.tenpay\.com|mp-component\.cdn-go\.cn/i.test(s)) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — WeChat Pay URL.',
           fields: [{ label: 'Network', val: 'WeChat Pay' }, { label: 'Host', val: s.split('/')[2] || s }] };
       }
 
-      // Alipay
       if (/qr\.alipay\.com|ds\.alipay\.com|shopcashier\.alipay\.com/i.test(s)) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — Alipay.',
           fields: [{ label: 'Network', val: 'Alipay' }, { label: 'Host', val: s.split('/')[2] || s }] };
       }
 
-      // Chinese payment aggregators
       if (/order\.duolabao\.com|qr\.lcsw\.cn|qr\.shouqianba\.com|qr\.swiftpass\.cn|qr\.heepay\.com|pay\.sandpay\.com\.cn|pay\.adapay\.cn|pay\.lianpay\.com\.cn|qr\.99bill\.com|safepay\.jd\.com|mppay\.baidu\.com|pay\.meituan\.com|qr\.allinpay\.com|pay\.yeepay\.com|qr\.lakala\.com|qr\.epay\.com/i.test(s)) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — Chinese payment aggregator.',
           fields: [{ label: 'Network', val: 'QRC (Aggregator)' }, { label: 'Host', val: s.split('/')[2] || s }] };
       }
 
-      // UnionPay CPM — payload starts with CPV01
       if (/^CPV01/i.test(s)) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — UnionPay CPM (Consumer Presented Mode).',
           fields: [{ label: 'Network', val: 'UnionPay' }, { label: 'Mode', val: 'CPM (Consumer Presented)' }] };
       }
 
-      // EMV MPM — starts with 000201
       if (/^000201/.test(s)) {
         const entries = parseEmvTlv(s);
-        const country = tlvGet(entries, '58');
-        const merchant = decodeMerchantName(entries);
+        const country  = tlvGet(entries, '58');
+        const merchant = tlvGet(entries, '59');
         const currency = tlvGet(entries, '53');
-        const amount = tlvGet(entries, '54');
-        const init = initMethod(tlvGet(entries, '01'));
-        const bakong = s.match(/([a-z0-9_.+-]+@[a-z0-9-]+\.nbc\.org\.kh)/i);
-        const hasKhMerchantAccount = /@ab|@ac|@aclb|@acb|@aci|@aeon|@am|@ar|@as|@bi|@bk|@br|@ca|@cb|@cbc|@ch|@cm|@co|@cp|@da|@em|@fc|@ft|@ftb|@hf|@hk|@hl|@ib|@jt|@kb|@ke|@lo|@lolc|@ly|@mb|@mo|@ms|@or|@os|@pi|@pp|@ppc|@pw|@rdb|@sab|@scb|@sg|@sh|@sp|@su|@tr|@uc|@up|@wbf|@wing|khqr@/i.test(s);
+        const amount   = tlvGet(entries, '54');
+        const city     = tlvGet(entries, '60');
+        const init     = initMethod(tlvGet(entries, '01'));
+        const initRaw  = tlvGet(entries, '01');
+        const bakong   = s.match(/([a-z0-9_.+\-]+@[a-z0-9\-]+\.nbc\.org\.kh)/i);
+        const hasKhSuffix = /@(ab|ac|acb|aclb|aci|aeon|am|ar|ardb|as|bi|bk|br|ca|cb|cbc|ch|cm|co|cp|da|em|fc|ft|ftb|hf|hk|hl|ib|jt|kb|ke|lo|lolc|ly|mb|mo|ms|or|os|pi|pp|ppc|pw|rdb|sab|scb|sg|sh|sp|su|tr|uc|up|wbf|wing|khqr)/i.test(s);
         const crc = validateEmvCrc(s);
+        const crcLabel = !crc.present ? 'Not present'
+          : crc.valid ? 'Valid (' + crc.actual + ')'
+          : 'Invalid — stored ' + crc.actual + ', expected ' + crc.expected;
 
-        if (country === 'KH' || (bakong && bakong[1]) || hasKhMerchantAccount) {
+        if (country === 'KH' || s.contains('5303116') || (bakong && bakong[1]) || hasKhSuffix) {
           return {
             type: QrType.KHQR, badgeClass: 'badge-khqr', icon: '🇰🇭', confidence: 'High',
+            modeBadge: initRaw === '12' ? 'badge-dynamic' : 'badge-static',
+            modeLabel: initRaw === '12' ? 'Dynamic' : 'Static',
             description: 'Cambodia KHQR — National Bank of Cambodia EMV QR standard.',
             fields: [
-              { label: 'Country', val: 'KH — Cambodia' },
-              { label: 'Currency', val: currency ? currName(currency) + ' (' + currency + ')' : '—' },
-              { label: 'Amount', val: amount || (init.startsWith('Dynamic') ? '(in transaction)' : '(not set)') },
+              { label: 'Country',       val: 'KH — Cambodia' },
+              { label: 'Currency',      val: currency ? currName(currency) + ' (' + currency + ')' : '—' },
+              { label: 'Amount',        val: amount || (initRaw === '12' ? '(in transaction)' : '(not set)') },
               { label: 'Merchant name', val: merchant || '—' },
-              { label: 'Bakong ID', val: bakong ? bakong[1] : '—' },
-              { label: 'Initiation', val: init || '—' },
-              { label: 'CRC', val: !crc.present ? 'Not present' : (crc.valid ? 'Valid' : ('Invalid (expected ' + crc.expected + ', got ' + crc.actual + ')')) },
+              { label: 'City',          val: city || '—' },
+              { label: 'Bakong ID',     val: bakong ? bakong[1] : '—' },
+              { label: 'Initiation',    val: init || '—' },
+              { label: 'CRC',           val: crcLabel, crcValid: crc.valid, crcPresent: crc.present },
             ]
           };
         }
@@ -1013,24 +981,22 @@ private boolean isKhqr(String s) {
           type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — EMV compliant.',
           fields: [
-            { label: 'Network', val: network },
-            { label: 'Country', val: country || '—' },
-            { label: 'Currency', val: currency ? currName(currency) + ' (' + currency + ')' : '—' },
-            { label: 'Amount', val: amount || '—' },
+            { label: 'Network',       val: network },
+            { label: 'Country',       val: country || '—' },
+            { label: 'Currency',      val: currency ? currName(currency) + ' (' + currency + ')' : '—' },
+            { label: 'Amount',        val: amount || '—' },
             { label: 'Merchant name', val: merchant || '—' },
-            { label: 'CRC', val: !crc.present ? 'Not present' : (crc.valid ? 'Valid' : ('Invalid (expected ' + crc.expected + ', got ' + crc.actual + ')')) },
+            { label: 'CRC',           val: crcLabel, crcValid: crc.valid, crcPresent: crc.present },
           ]
         };
       }
 
-      // UnionPay Non-Standard proprietary prefix
       if (/^UPQR:/i.test(s) || /^UP\d/i.test(s) || /^CUP\d/i.test(s)) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'High',
           description: 'Payment QR — UnionPay proprietary format.',
           fields: [{ label: 'Network', val: 'UnionPay (non-standard)' }, { label: 'Prefix', val: s.substring(0, 24) }] };
       }
 
-      // WeChat keyword fallback
       if (/weixin|wechat/i.test(s)) {
         return { type: QrType.QRC, badgeClass: 'badge-qrc', icon: '🔵', confidence: 'Medium',
           description: 'Payment QR — WeChat Pay (keyword match).',
@@ -1043,56 +1009,89 @@ private boolean isKhqr(String s) {
       };
     }
 
-    function showBatchResults(payloads) {
-      const infos = payloads.map(raw => ({ raw, info: detectType(raw) }));
-      const supportedCount = infos.filter(v => v.info.type !== QrType.UNKNOWN).length;
-      const cards = infos.map((item, idx) => {
-        const info = item.info;
-        return `<div class="result-card">
-        <div class="result-header">
-          <div class="title-row">
-            <span class="result-title">${idx + 1}. ${info.icon} ${info.type}</span>
-          </div>
-        </div>
-      </div>`;
+    /* ── render ── */
+    function showResult(raw, imgSrc) {
+      const s = normalizeQrPayload(raw);
+      const info = detectType(s);
+      const prev = imgSrc ? `<img class="preview-img" src="${imgSrc}" alt="QR preview">` : '';
+
+      const confClass = info.confidence === 'High' ? 'badge-conf-high'
+        : info.confidence === 'Medium' ? 'badge-conf-medium' : 'badge-conf-low';
+
+      let badges = `<span class="type-badge ${info.badgeClass}">${info.type}</span>`;
+      badges += `<span class="type-badge ${confClass}">${info.confidence} confidence</span>`;
+      if (info.modeBadge && info.modeLabel) badges += `<span class="type-badge ${info.modeBadge}">${info.modeLabel}</span>`;
+      if (info.dynamicBadge && info.dynamicLabel) badges += `<span class="type-badge ${info.dynamicBadge}">${info.dynamicLabel}</span>`;
+
+      const fieldRows = (info.fields || []).map(f => {
+        const isCrc = f.label === 'CRC';
+        let valClass = 'field-val';
+        if (isCrc && f.crcPresent && !f.crcValid) valClass += ' err';
+        if (isCrc && f.crcPresent && f.crcValid)  valClass += ' hi';
+        return `<div class="field-row">
+          <span class="field-label">${esc(f.label)}</span>
+          <span class="${valClass}">${esc(f.val)}</span>
+        </div>`;
       }).join('');
 
+      const rawId = 'rawBox_' + Date.now();
       document.getElementById('resultArea').innerHTML = `
-    <div class="result-card">
-      <div class="result-header">
-        <div class="title-row">
-          <span class="result-title">Bulk detection result</span>
-          <span class="type-badge badge-khqr">${supportedCount}/${infos.length} supported</span>
-        </div>
-      </div>
-    </div>
-    ${cards}`;
+        <div class="result-card">
+          <div class="result-header">
+            <div class="title-row">
+              <span class="result-title">${info.icon} ${info.type}</span>
+            </div>
+            <div class="badges">${badges}</div>
+            <div class="result-sub">${esc(info.description)}</div>
+          </div>
+          ${prev || fieldRows ? `<div class="result-body">
+            ${prev}
+            ${fieldRows}
+            ${s ? `<div class="raw-section">
+              <button class="raw-toggle" onclick="document.getElementById('${rawId}').classList.toggle('open');this.textContent=document.getElementById('${rawId}').classList.contains('open')?'▲ Hide raw payload':'▼ Show raw payload'">▼ Show raw payload</button>
+              <div class="raw-box" id="${rawId}">${esc(s)}</div>
+            </div>` : ''}
+          </div>` : ''}
+        </div>`;
     }
 
-    function showResult(raw, imgSrc) {
-      const normalizedRaw = normalizeQrPayload(raw);
-      const info = detectType(normalizedRaw);
-      const prev = imgSrc ? `<img class="preview-img" src="${imgSrc}" alt="QR preview">` : '';
+    function showBatchResults(payloads) {
+      const infos = payloads.map(raw => ({ raw, info: detectType(normalizeQrPayload(raw)) }));
+      const supported = infos.filter(v => v.info.type !== QrType.UNKNOWN).length;
+      const cards = infos.map((item, idx) => {
+        const info = item.info;
+        const confClass = info.confidence === 'High' ? 'badge-conf-high'
+          : info.confidence === 'Medium' ? 'badge-conf-medium' : 'badge-conf-low';
+        return `<div class="result-card">
+          <div class="result-header">
+            <div class="title-row">
+              <span class="result-title">${idx + 1}. ${info.icon} ${info.type}</span>
+              <span class="type-badge ${info.badgeClass}">${info.type}</span>
+              <span class="type-badge ${confClass}">${info.confidence}</span>
+            </div>
+            <div class="result-sub">${esc(info.description)}</div>
+          </div>
+        </div>`;
+      }).join('');
       document.getElementById('resultArea').innerHTML = `
-    <div class="result-card">
-      <div class="result-header">
-        <div class="title-row">
-          <span class="result-title">${info.icon} ${info.type}</span>
-        </div>
-      </div>
-      ${prev ? `<div class="result-body">${prev}</div>` : ''}
-    </div>`;
+        <div class="result-card">
+          <div class="result-header">
+            <div class="title-row">
+              <span class="result-title">Bulk detection result</span>
+              <span class="type-badge badge-khqr">${supported}/${infos.length} identified</span>
+            </div>
+          </div>
+        </div>${cards}`;
     }
 
-    function showError(msg) { document.getElementById('resultArea').innerHTML = `<div class="result-card"><div class="no-result">${msg}</div></div>`; }
-    function toggleRaw(btn) { const b = document.getElementById('rawBox'); b.classList.toggle('open'); btn.querySelector('svg').style.transform = b.classList.contains('open') ? 'rotate(180deg)' : ''; }
-    function toggleRawById(id) {
-      const b = document.getElementById(id);
-      if (!b) return;
-      b.classList.toggle('open');
+    function showError(msg) {
+      document.getElementById('resultArea').innerHTML =
+        `<div class="result-card"><div class="no-result">${esc(msg)}</div></div>`;
     }
-    function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+    function esc(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
   </script>
 </body>
-
 </html>
